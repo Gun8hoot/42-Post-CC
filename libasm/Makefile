@@ -1,4 +1,5 @@
 NAME		=	libasm.a
+TESTER_NAME	=	tester
 
 CC			=	gcc
 CFLAGS		=	-g3 -c -I.
@@ -30,20 +31,24 @@ all: $(NAME)
 
 $(NAME): $(OBJECTS)
 	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $@
+	@ar rcs $@ $(OBJECTS)
 
 clean:
 	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(OBJECTS)
 	@rm -f $(OBJECTS)
+	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(COBJECTS)
+	@rm -f $(COBJECTS)
 
 fclean: clean
 	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(NAME)
 	@rm -f $(NAME)
-	@rm -f $(tester)
+	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(TESTER_NAME)
+	@rm -f $(TESTER_NAME)
 
 re: fclean $(NAME)
 
-tester: $(OBJECTS) $(COBJECTS)
+$(TESTER_NAME): re $(COBJECTS)
 	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $@
 	@$(CC) $(OBJECTS) $(COBJECTS) -o $@
 
-.PHONY: $(NAME) all re clean fclaen
+.PHONY: $(NAME) all re clean fclean

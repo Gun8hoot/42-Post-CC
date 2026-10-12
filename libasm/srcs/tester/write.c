@@ -61,7 +61,7 @@ static void	individual_write(int pty_fd, char *str, size_t bytes_nb)
 
 	if (libasm_ret != libc_ret)
 		printf("\e[0;31m[-] Number of written bytes differ !\nlibasm = %d\nlibc = %d\e[0m\n", libasm_ret, libc_ret);
-	else if (libasm_ret != libc_ret)
+	else if (libasm_errno != libc_errno)
 		errno_check(libasm_errno, libc_errno);
 	else
 		printf("\e[0;32m[+] TEST PASSED\e[0m\n");

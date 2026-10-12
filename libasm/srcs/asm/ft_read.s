@@ -1,0 +1,22 @@
+BITS 64
+
+; To check read special error case
+section .text
+	global ft_read
+	extern __errno_location
+
+	ft_read:
+		mov rax, 0
+		syscall
+
+		test rax, rax
+		jns .done
+
+		neg rax ; Invert sign bit to get a positif number
+		mov rdi, rax ; Save the result in rdi
+
+		call __errno_location wrt ..plt ; Get the errno pointer
+		mov [rax], rdi ; Put the actual errno code on errno
+		mov rax, -1 ; Modify the return code to -1
+		.done:
+			ret
