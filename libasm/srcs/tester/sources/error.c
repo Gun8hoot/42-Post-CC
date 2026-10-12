@@ -1,4 +1,4 @@
-#include "main.h"
+#include "includes/main.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -121,16 +121,23 @@ char *errno_int2str(int errno_caught)
 
 void	errno_check(int libasm_errno, int libc_errno)
 {
-	char	*errno_name;
+	char	*libasm_errno_name = NULL;
+	char	*libc_errno_name = NULL;
 
-	errno_name = errno_int2str(libasm_errno);
-	if (errno_name == NULL)
+	libasm_errno_name = errno_int2str(libasm_errno);
+	libc_errno_name = errno_int2str(libc_errno);
+	if (libasm_errno_name == NULL || libc_errno_name == NULL)
 	{
-		printf("[-] Errno differ !\nlibasm = %d\nlibc = %d\n", libasm_errno, libc_errno);
+		if (libasm_errno_name != NULL)
+			free(libasm_errno_name);
+		if (libc_errno_name != NULL)
+			free(libc_errno_name);
+		printf("\e[0;31m[-] Errno differ !\nlibasm = %d\nlibc = %d\n\e[0m", libasm_errno, libc_errno);
 	}
 	else
 	{
-		printf("[-] Errno differ !\nlibasm = %s (%d)\nlibc = %s (%d)\n", errno_name, libasm_errno, errno_name, libc_errno);
-		free(errno_name);
+		printf("\e[0;31m[-] Errno differ !\nlibasm = %s (%d)\nlibc = %s (%d)\n\e[0m", libasm_errno_name, libasm_errno, libc_errno_name, libc_errno);
+		free(libasm_errno_name);
+		free(libc_errno_name);
 	}
 }

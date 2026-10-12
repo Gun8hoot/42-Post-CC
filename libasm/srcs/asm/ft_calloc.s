@@ -13,7 +13,12 @@ section .text
 		; Calculate the size to alloc
 		mov rax, rdi
 		mul rsi
-		mov rdi, rax
+
+		; Checking for size_t overflow
+		test rdx, rdx
+		jo overflow
+
+		mov rdi, rax ;
 		push rdi ; Save the real size to allocated on the stack
 
 		; Allocated memory
@@ -38,5 +43,9 @@ section .text
 			jmp loop ; Redo the loop
 
 		done:
+			add rsp, 8
+			ret
+		overflow:
+			xor rax, rax
 			add rsp, 8
 			ret

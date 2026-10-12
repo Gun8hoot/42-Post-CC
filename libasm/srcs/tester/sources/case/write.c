@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <sys/types.h>
-#include "main.h"
+#include "includes/main.h"
 #include <pty.h>
 
 /*
@@ -46,21 +46,31 @@ static void test_pty_destroy(struct test_pty *pty)
  * ==============
  */
 
-static void	individual_write(int pty_fd, char *str, size_t bytes_nb)
+static void	individual_write(int pty_fd, char *str, size_t bytes_nb, char *test_in_progress)
 {
+	/* === Return value === */
 	int libasm_ret;
-	int libasm_errno;
 	int libc_ret;
+
+	/* === Save errno === */
+	int libasm_errno;
 	int libc_errno;
 
+	printf("\e[0;34m[&] %s\n\e[0m", test_in_progress);
+
+	errno = 0;
 	libasm_ret = ft_write(pty_fd, str, bytes_nb);
 	libasm_errno = errno;
 
+	errno = 0;
 	libc_ret = write(pty_fd, str, bytes_nb);
 	libc_errno = errno;
 
 	if (libasm_ret != libc_ret)
-		printf("\e[0;31m[-] Number of written bytes differ !\nlibasm = %d\nlibc = %d\e[0m\n", libasm_ret, libc_ret);
+		printf("\e[0;31m[-] Number of written bytes differ !\n\
+string = \"%s\"\n\
+libasm = %d\n\
+libc = %d\e[0m\n", str, libasm_ret, libc_ret);
 	else if (libasm_errno != libc_errno)
 		errno_check(libasm_errno, libc_errno);
 	else
@@ -74,17 +84,16 @@ void	test_write(void)
 	ssize_t bytes;
 	memset(&pty, 0, sizeof(pty));
 
+	printf("\n\e[0;34m=== TEST FT_WRITE ===\e[0m\n");
+
 	if (test_pty_create(&pty))
 	{
 		printf("[!] Failed to create an alternative pty for ft_write test, skipping ...\n");
 		return;
 	}
 
-	printf("\e[0;33m[!] Testing ft_write normal use\e[0m\n");
-	individual_write(pty.slave_fd, str, strlen(str));
-
-	printf("\e[0;33m[!] Testing ft_write invalid fd\e[0m\n");
-	individual_write(-1, str, strlen(str));
+	individual_write(pty.slave_fd, str, strlen(str), "Testing write a simple string");
+	individual_write(-1, str, strlen(str), "Testing write on an invalid fd");
 
 	test_pty_destroy(&pty);
 }

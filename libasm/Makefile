@@ -2,17 +2,17 @@ NAME		=	libasm.a
 TESTER_NAME	=	tester
 
 CC			=	gcc
-CFLAGS		=	-g3 -c -I.
+CFLAGS		=	-g3 -c -Isrcs/tester
 
 AS			=	nasm
 ASFLAG		=	-f elf64
 
 OBJECT_DIR	=	.objects
 
-SOURCES		= $(wildcard *.s */*.s */*/*.s)
+SOURCES		= $(shell find srcs -name '*.s')
 OBJECTS		= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(SOURCES))
 
-CSOURCES	= $(wildcard *.c */*.c */*/*.c)
+CSOURCES	= $(shell find srcs -name '*.c')
 COBJECTS	= $(patsubst %.c,$(OBJECT_DIR)/%.o,$(CSOURCES))
 
 # ASSEMBLING .s FILES
