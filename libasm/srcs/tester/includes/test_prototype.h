@@ -11,3 +11,4 @@ extern ssize_t	ft_write(int filedes, const void *buff, size_t nbyte);
 extern ssize_t	ft_read(int fd, void *buf, size_t count);
 extern char		*ft_strdup(const char *s);
 extern void		*ft_calloc(size_t n, size_t size);
+extern int		ft_atoi_base(char *str, char *base);

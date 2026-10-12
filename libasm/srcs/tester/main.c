@@ -1,9 +1,9 @@
 
 #include "includes/main.h"
-#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
+	ft_atoi_base("str", "0123456789") ? printf("valid base\n") : printf("invalid base\n");
 
 	test_strlen();
 	test_strcpy();
