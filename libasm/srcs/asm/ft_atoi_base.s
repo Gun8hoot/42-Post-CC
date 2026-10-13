@@ -17,7 +17,7 @@ ft_atoi_base:
 	;cmp rax, 1 ; If the base is invalid
 	;jnz end
 
-	end:
+	ft_atoi_base_end:
 		add rsp, 16 ; Reset the stack at his normal state
 		ret ; return
 
@@ -27,21 +27,22 @@ ft_atoi_base:
 ;   if it contain unallow character (see invalid_base in .rodata) and if the base
 ;   contain duplicated character.
 ; Todo:
-;   - Check duplicated character using a bitmap array
+;   - Complete rewrite v1 is ulgy asf
 check_base:
 	; Stack initialization
-	push rbp		; Save our bp
-	push rdi		; Save our base string on the stack
-	mov rbp, rsp	; Save our sp in bp
-	sub rsp, 256	; Back from 256 bytes (256 ascii character available)
+	push rbp
+	push rdi
+	mov rbp, rsp
+	sub rsp, 256								; Back from 256 bytes (256 ascii character available)
 
-	mov rdi, rsp
-	xor eax, eax ; Reset EAX
-	mov rcx, 32
-	rep stosq
+	; Clearing array
+	lea rdi, [rsp]								; Load the address of the array
+	mov rsi, 0x00								; We want fill our array with 0s
+	mov rdx, 256								; The size of our array
+	call ft_memset
 
 	; Check that our base is not empty or have one char
-	mov rdi, [rsp + 256 + 8] ; Take the base string from the stack
+	mov rdi, [rsp + 256] ; Take the base string from the stack from the
 	call ft_strlen
 	cmp rax, 1
 	jle error ; if strlen(base) <= 1
@@ -52,11 +53,16 @@ check_base:
 
 	; Main loop
 	loop:
-		xor r10, r10 ; Setting r10 (j) to zero
-		mov bl, [rdi + r8] ; Load our current base character in bl
-		cmp bl, 0x00 ; If we are at the null terminator
+		xor r10, r10 			; j = 0
+		mov bl, byte [rdi + r8]
+		cmp bl, 0x00			; base[i] == '\0'
 		jz done
+		movzx rax, bl
+		cmp byte [rsp + rax], 1 		; bitmap[i] == 1
+		jz error
+		mov byte [rsp + rax], 1
 
+		mov sil, 1
 		; Second loop
 		inner_loop:
 			mov cl, [r11 + r10]		; cl = invalid_base[j]
@@ -70,14 +76,14 @@ check_base:
 			inc r8
 			jmp loop
 	done:
-		add rsp, 264 ; 256 + 8 (base string pushed)
 		mov rax, 1
 		jmp end
 	error:
-		add rsp, 264 ; 256 + 8 (base string pushed)
 		mov rax, 0
 		jmp end
 	end:
+		add rsp, 256
+		pop rdi
 		pop rbp
 		ret
 
@@ -115,3 +121,5 @@ ft_memset:
 section .rodata
 	invalid_base db "+-", 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, " ", 0 ; "+-\a\b\t\n\v\f\r "
 	invalid_base_len equ $ - invalid_base - 1
+
+	NUMBER_ASCII_CHAR equ 256
