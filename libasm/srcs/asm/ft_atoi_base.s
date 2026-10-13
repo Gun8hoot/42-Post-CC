@@ -9,91 +9,105 @@ global ft_is_whitespace
 ; int ft_atoi_base(char *str, char *base)
 ; Convert a based string to his base10 number
 ft_atoi_base:
-	push r8			; Only for stack alignment
+	; --- Stack initialization ---
+	push r8										; Only for stack alignment
 	push rbp
-	push rsi		; The base "char *base"
-	push rdi		; The string to convert "char *str"
+	push rsi									; The base "char *base"
+	push rdi									; The string to convert "char *str"
 
 	mov rbp, rsp
-	sub rsp, 8		; Allocate two int on the stack, those int will be
-					;    1. The return value
-					;    2. The sign value that will say if the result should have a - or not
+	sub rsp, 8									; Allocate two int on the stack, those int will be
+												;    1. The return value
+												;    2. The sign value that will say if the result should have a - or not
 
-	mov [rsp], 0x00
-	mov [rsp + 4], 0x01
+	mov dword [rsp], 0x00						; Initialized our int result to 0
+	mov dword [rsp + 4], 0x01					; Initialized our int sign to 1
 
-	; Check our base
+	; --- Base checking ---
+	; Check if out base is valid
 	mov rdi, rsi
 	call check_base
-
 	; Checking the result of check_base()
-	cmp rax, 1 ; if (!check_base(base))
-	jnz ft_atoi_base_error
+	cmp rax, 1
+	jnz ft_atoi_base_error						; if (!check_base(base))
 
-	; Calculate the size of our base
+	; --- Real algorithm initialization ---
+	; Keeping the size of our base
 	call ft_strlen
 	mov r9, rax
 
-	mov rdi, [rsp + 8]
+	mov rdi, [rsp + 8]							; Recover from the stack our string "str"
 	xor r8, r8
-	; Skip whitespace on the string
+
+	; --- Skipping every whitespace we found ---
 	skip_whitespace:
 		skip_whitespace_loop:
 			mov al, byte [rdi + r8]
 			cmp al, 0x00
-			jz skip_whitespace_loop_end		; if (!str[i])
-			mov rcx, rdi
-			movzx edi, al
-			call ft_is_whitespace
-			mov rdi, rcx
-			cmp rax, 1
-			jnz skip_whitespace_loop_end	; if (!ft_is_whitespace(str[i]))
+			jz skip_whitespace_loop_end			; if (!str[i])
+			mov rcx, rdi						; Saving the our entier string "str" in rcx
+			movzx edi, al						; Put the character on the function parameter
+			call ft_is_whitespace				; ft_is_whitespace(str[i])
+			mov rdi, rcx						; Recover our string "str" in rdi
+			cmp rax, 0x1
+			jnz skip_whitespace_loop_end		; if (!ft_is_whitespace(str[i]))
 			jmp skip_whitespace_loop
 		skip_whitespace_loop_end:
 			nop
-	; Apply every mathematical operation sign
+	; --- Process every mathematical operation sign ---
 	process_sign:
 		process_sign_loop:
 			mov al, byte [rdi + r8]
 			cmp al, 0x00
-			jz process_sign_loop_end; if (!str[i])
+			jz process_sign_loop_end			; if (!str[i])
 			cmp al, '+'
-			jz found_plus			; if (str[i] == '+')
+			jz found_plus						; if (str[i] == '+')
 			cmp al, '-'
-			jz found_minus			; if (str[i] == '-')
+			jz found_minus						; if (str[i] == '-')
 			jmp process_sign_loop_end
 			found_plus:
-				mov dword [rsp + 4], 0x01
+				mov dword [rsp + 4], 0x01		; sign = 1
 				inc r8
 				jmp process_sign_loop
 			found_minus:
-				neg dword [rsp + 4]
+				neg dword [rsp + 4]				; sign *= -1
 				inc r8
 				jmp process_sign_loop
 		process_sign_loop_end:
 			nop
-	; Convert every based encoded numbered into a int
+	; --- Convert based number in a base10 int ---
 	process_number:
-		xor r10, r10
+		xor r10, r10							; A counter to count how many number ive converted,
+												; is used during the conversion
 		process_number_loop:
 			mov al, byte [rdi + r8]
 			cmp al, 0x00
+			jz process_number_loop_end
+			; Get the value of a based number, for F in hex this will be 15
+			get_value_based:
+				xor r13, r13
+				get_value_based_loop:
+					cmp byte [rsi + r13], 0x00
+					jz process_number_loop_end	; if base[j] == '\0'
+					cmp al, byte [rsi + r13]
+					jz get_value_based_loop_end	; if base[j] == str[i]
+					inc r13
+					jmp get_value_based_loop
 
-			mov eax, dword [rsp]
-			imul eax, r9d
-			mov dword [rsp], eax
-			mov bl, al
-			sub bl, '0'
-			movzx eax, al
-			add dword [rsp], eax
-			mov eax, dword [rsp]
-			imul eax, 10
+				get_value_based_loop_end:
+					nop
+
+			mov eax, dword [rsp]				; Get result from the stack
+			imul eax, r9d						; result *= base_length
+			add eax, r13d						; result += base[j]
+			;imul eax, 10						; result *= 10
 			mov dword [rsp], eax
 
 			inc r8
 			inc r10
 			jmp process_number_loop
-
+		process_number_loop_end:
+			nop
 	mov eax, dword [rsp]
 	imul eax, dword [rsp + 4]
 	jmp ft_atoi_base_end

@@ -6,8 +6,8 @@ bool ft_is_whitespace(char c);
 
 int main(int argc, char **argv)
 {
-	printf("%d\n", ft_atoi_base("FF", "0123456789ABCDEF"));
-	ft_is_whitespace('a') ? printf("Is a whitespace\n") : printf("Is not a whitespace\n");
+	printf("%d\n", ft_atoi_base("7FFFFFFF", "0123456789ABCDEF"));
+	// ft_is_whitespace('a') ? printf("Is a whitespace\n") : printf("Is not a whitespace\n");
 
 	test_strlen();
 	test_strcpy();

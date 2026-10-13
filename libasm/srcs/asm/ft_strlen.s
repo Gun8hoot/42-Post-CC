@@ -3,6 +3,7 @@ BITS 64
 section .text
 	global ft_strlen
 	ft_strlen:
+		push rsi
 		; INITIALIZE
 		xor rsi, rsi ; Setting rsi to 0
 
@@ -13,4 +14,5 @@ section .text
 			jmp loop ; Redo the loop
 		endloop:
 			mov rax, rsi ; Put the value of rsi (our counter) in rax
+			pop rsi
 			ret ; Return the value

@@ -51,4 +51,4 @@ $(TESTER_NAME): re $(COBJECTS)
 	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $@
 	@$(CC) $(OBJECTS) $(COBJECTS) -o $@
 
-.PHONY: $(NAME) all re clean fclean
+.PHONY: $(NAME) all re clean fclean tester
