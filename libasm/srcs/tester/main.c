@@ -1,9 +1,13 @@
 
 #include "includes/main.h"
+#include <stdbool.h>
+
+bool ft_is_whitespace(char c);
 
 int main(int argc, char **argv)
 {
-	ft_atoi_base("str", "0123456789ABCDEF") ? printf("valid base\n") : printf("invalid base\n");
+	printf("%d\n", ft_atoi_base("FF", "0123456789ABCDEF"));
+	ft_is_whitespace('a') ? printf("Is a whitespace\n") : printf("Is not a whitespace\n");
 
 	test_strlen();
 	test_strcpy();

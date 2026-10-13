@@ -3,23 +3,111 @@ extern ft_strlen
 
 section .text
 global ft_atoi_base
+global ft_is_whitespace
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; int ft_atoi_base(char *str, char *base)
 ; Convert a based string to his base10 number
 ft_atoi_base:
-	push rsi ; Push the base on the stack
-	push rdi ; Push the number to convert on the stack
+	push r8			; Only for stack alignment
+	push rbp
+	push rsi		; The base "char *base"
+	push rdi		; The string to convert "char *str"
+
+	mov rbp, rsp
+	sub rsp, 8		; Allocate two int on the stack, those int will be
+					;    1. The return value
+					;    2. The sign value that will say if the result should have a - or not
+
+	mov [rsp], 0x00
+	mov [rsp + 4], 0x01
 
 	; Check our base
 	mov rdi, rsi
 	call check_base
-	;cmp rax, 1 ; If the base is invalid
-	;jnz end
 
+	; Checking the result of check_base()
+	cmp rax, 1 ; if (!check_base(base))
+	jnz ft_atoi_base_error
+
+	; Calculate the size of our base
+	call ft_strlen
+	mov r9, rax
+
+	mov rdi, [rsp + 8]
+	xor r8, r8
+	; Skip whitespace on the string
+	skip_whitespace:
+		skip_whitespace_loop:
+			mov al, byte [rdi + r8]
+			cmp al, 0x00
+			jz skip_whitespace_loop_end		; if (!str[i])
+			mov rcx, rdi
+			movzx edi, al
+			call ft_is_whitespace
+			mov rdi, rcx
+			cmp rax, 1
+			jnz skip_whitespace_loop_end	; if (!ft_is_whitespace(str[i]))
+			jmp skip_whitespace_loop
+		skip_whitespace_loop_end:
+			nop
+	; Apply every mathematical operation sign
+	process_sign:
+		process_sign_loop:
+			mov al, byte [rdi + r8]
+			cmp al, 0x00
+			jz process_sign_loop_end; if (!str[i])
+			cmp al, '+'
+			jz found_plus			; if (str[i] == '+')
+			cmp al, '-'
+			jz found_minus			; if (str[i] == '-')
+			jmp process_sign_loop_end
+			found_plus:
+				mov dword [rsp + 4], 0x01
+				inc r8
+				jmp process_sign_loop
+			found_minus:
+				neg dword [rsp + 4]
+				inc r8
+				jmp process_sign_loop
+		process_sign_loop_end:
+			nop
+	; Convert every based encoded numbered into a int
+	process_number:
+		xor r10, r10
+		process_number_loop:
+			mov al, byte [rdi + r8]
+			cmp al, 0x00
+
+			mov eax, dword [rsp]
+			imul eax, r9d
+			mov dword [rsp], eax
+			mov bl, al
+			sub bl, '0'
+			movzx eax, al
+			add dword [rsp], eax
+			mov eax, dword [rsp]
+			imul eax, 10
+			mov dword [rsp], eax
+
+			inc r8
+			inc r10
+			jmp process_number_loop
+
+	mov eax, dword [rsp]
+	imul eax, dword [rsp + 4]
+	jmp ft_atoi_base_end
+
+	ft_atoi_base_error:
+		xor rax, rax
 	ft_atoi_base_end:
-		add rsp, 16 ; Reset the stack at his normal state
-		ret ; return
+		add rsp, 8
+		mov rsp, rbp
+		pop rdi
+		pop rsi
+		pop rbp
+		pop r8
+		ret
 
 ; https://www.youtube.com/watch?v=woCCcOlopNo
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -28,36 +116,48 @@ ft_atoi_base:
 ;   contain duplicated character.
 ; Todo:
 ;   - Complete rewrite v1 is ulgy asf
+; Register usage:
+;   - rdi = Our base to check
+;   - r11 = A set with invalid character
+;   - r8  = Our main loop index (i)
+;   - r10 = Our inner loop index (j)
+;   - bl  = Our base current character (base[i])
+;   - cl  = Our set current character (invalid_base[j])
 check_base:
-	; Stack initialization
-	push rbp
-	push rdi
-	mov rbp, rsp
-	sub rsp, 256								; Back from 256 bytes (256 ascii character available)
+	; Initialized our stack
+	push rbp									; Save our original base pointer on the stack
+	push rdx									; Save our rdx register on the stack
+	push rsi									; Save our rsi register on the stack
+	push rdi									; Save our base on the stack
+	push r10
+	push r8										; Save r8 on the stack
+	mov rbp, rsp								; Save our rsp on rbp
+	sub rsp, 256								; Back from 256 bytes (256 ascii character available for the array)
 
-	; Clearing array
+	; Setting our array at 0s
 	lea rdi, [rsp]								; Load the address of the array
 	mov rsi, 0x00								; We want fill our array with 0s
 	mov rdx, 256								; The size of our array
 	call ft_memset
 
 	; Check that our base is not empty or have one char
-	mov rdi, [rsp + 256] ; Take the base string from the stack from the
+	mov rdi, [rbp + 16] ; Take the base string from the stack from the
 	call ft_strlen
 	cmp rax, 1
 	jle error ; if strlen(base) <= 1
 
-	; Init before loop start
+	; Initialized our main loop
 	lea r11, [rel invalid_base] ; Load the address of the symbole with invalid base character
-	xor r8, r8 ; Setting r8 (i) to zero
+	xor r8, r8 ; i = 0
 
 	; Main loop
 	loop:
-		xor r10, r10 			; j = 0
+		xor r10, r10 					; j = 0
 		mov bl, byte [rdi + r8]
-		cmp bl, 0x00			; base[i] == '\0'
+		cmp bl, 0x00					; while (base[i])
 		jz done
-		movzx rax, bl
+		movzx rax, bl					; We cannot do CPU operation between a two register that are not at the same size,
+										; so here i put our base[i] in rax to do like bitmap[current_character] == 1
 		cmp byte [rsp + rax], 1 		; bitmap[i] == 1
 		jz error
 		mov byte [rsp + rax], 1
@@ -70,10 +170,10 @@ check_base:
 			jz end_inner_loop		; == '\0'
 			cmp bl, cl				; base[i] == invalid_base[j] ?
 			jz error				; == invalid_base[j]
-			inc r10					; r10++
+			inc r10					; j++
 			jmp inner_loop			; Redo the loop
 		end_inner_loop:
-			inc r8
+			inc r8					; i++
 			jmp loop
 	done:
 		mov rax, 1
@@ -83,7 +183,11 @@ check_base:
 		jmp end
 	end:
 		add rsp, 256
+		pop r8
+		pop r10
 		pop rdi
+		pop rsi
+		pop rdx
 		pop rbp
 		ret
 
@@ -117,9 +221,46 @@ ft_memset:
 		pop r8
 		ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; This function check whether a character is a whitespace or not
+;
+; Return (rax):
+;   0 : If the character is not a whitespace
+;   1 : If the character is a whitespace
+ft_is_whitespace:
+	push rdi
+	push rsi
+	push rcx
+	push r8
+
+	lea rsi, [rel whitespace]		; Load the address of the array
+	xor r8, r8						; i = 0
+	xor eax, eax					; Setting our return register to zero
+
+	; Loop through our whitespace character set
+	is_whitespace_loop:
+		mov cl, byte [rsi + r8]
+		cmp cl, 0x00				; if (c == '\0)
+		jz is_whitespace_end
+		cmp dil, cl					; if (c == whitespace[i])
+		jz is_whitespace_change_state
+		inc r8
+		jmp is_whitespace_loop
+
+	; Change our return value to 1
+	is_whitespace_change_state:
+		mov eax, 1
+
+	; Restore the stack and used register
+	is_whitespace_end:
+		pop r8
+		pop rcx
+		pop rsi
+		pop rdi
+		ret
 
 section .rodata
 	invalid_base db "+-", 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, " ", 0 ; "+-\a\b\t\n\v\f\r "
-	invalid_base_len equ $ - invalid_base - 1
+	whitespace db 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, " ", 0 ; "\a\b\t\n\v\f\r "
 
 	NUMBER_ASCII_CHAR equ 256
