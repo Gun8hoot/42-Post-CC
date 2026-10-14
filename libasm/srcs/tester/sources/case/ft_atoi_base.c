@@ -31,5 +31,8 @@ void test_atoi_base(void)
 	individual_atoi_base("9999999999999", "0123456789", 0, "Testing with a big overflow value");
 	individual_atoi_base("-2147483650", "0123456789", 0, "Testing with a little underflow value");
 	individual_atoi_base("-9999999999999", "0123456789", 0, "Testing with a big underflow value");
+	individual_atoi_base("3", "0123456789\t", 0, "Testing with a base how contain whitespace");
+	individual_atoi_base("3", "0", 0, "Testing with a base with one character");
+	individual_atoi_base("3", "", 0, "Testing with an empty base");
 
 }

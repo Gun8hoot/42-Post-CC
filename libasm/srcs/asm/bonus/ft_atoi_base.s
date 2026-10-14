@@ -19,12 +19,13 @@ ft_atoi_base:
 	push rdi									; The string to convert "char *str"
 
 	mov rbp, rsp
-	sub rsp, 8									; Allocate two int on the stack, those int will be
-												;    1. The return value
-												;    2. The sign value that will say if the result should have a - or not
+	sub rsp, 16									; Allocate two int on the stack, those int will be
+												;    1. The return value (8 bytes for int overflow handling)
+												;    2. An int to keep the sign (4 bytes)
+												;    3. Padding to stack align (4 bytes)
 
-	mov dword [rsp], 0x00						; Initialized our int result to 0
-	mov dword [rsp + 4], 0x01					; Initialized our int sign to 1
+	mov qword [rsp], 0x00						; Initialized our int result to 0
+	mov dword [rsp + 8], 0x01					; Initialized our int sign to 1
 
 	; --- Base checking ---
 	; Check if out base is valid
@@ -39,7 +40,7 @@ ft_atoi_base:
 	call ft_strlen
 	mov r9, rax
 
-	mov rdi, [rsp + 8]							; Recover from the stack our string "str"
+	mov rdi, [rsp + 16]							; Recover from the stack our string "str"
 	xor r8, r8
 
 	; --- Skipping every whitespace we found ---
@@ -70,11 +71,11 @@ ft_atoi_base:
 			jz found_minus						; if (str[i] == '-')
 			jmp process_sign_loop_end
 			found_plus:
-				mov dword [rsp + 4], 0x01		; sign = 1
+				mov dword [rsp + 8], 0x01		; sign = 1
 				inc r8
 				jmp process_sign_loop
 			found_minus:
-				neg dword [rsp + 4]				; sign *= -1
+				neg dword [rsp + 8]				; sign *= -1
 				inc r8
 				jmp process_sign_loop
 		process_sign_loop_end:
@@ -82,8 +83,6 @@ ft_atoi_base:
 
 	; --- Convert based number in a base10 int ---
 	process_number:
-		xor r10, r10							; A counter to count how many number ive converted,
-												; is used during the conversion
 		process_number_loop:
 			mov al, byte [rdi + r8]
 			cmp al, 0x00
@@ -102,26 +101,38 @@ ft_atoi_base:
 				get_value_based_loop_end:
 					nop
 
-			mov eax, dword [rsp]				; Get result from the stack
-			imul eax, r9d						; result *= base_length
-			jo ft_atoi_base_error				; if (result > INT_MAX
-			add eax, r13d						; result += base[j]
-			jo ft_atoi_base_error
-			mov dword [rsp], eax
+			mov rax, qword [rsp]				; Get result from the stack
+			imul rax, r9						; result *= base_length
+			cmp dword [rsp + 8], 0
+			jl 	negative_value					; if (sign < 0)
+			add rax, r13						; result += base[j]
+			jmp handle_overflow
 
-			inc r8
-			inc r10
+			negative_value:
+				sub rax, r13
+			handle_overflow:
+				; Checking underflow/overflow
+				cmp rax, INT_MIN
+				jl ft_atoi_base_error				; if (result < INT_MIN)
+				cmp rax, INT_MAX
+				jg ft_atoi_base_error				; if (result > INT_MAX)
+
+			mov qword [rsp], rax
+			inc r8									; i++
 			jmp process_number_loop
 		process_number_loop_end:
 			nop
+
 	mov eax, dword [rsp]
-	imul eax, dword [rsp + 4]					; result *= sign
+	imul eax, dword [rsp + 8]						; result *= sign
 	jmp ft_atoi_base_end
+
+
 
 	ft_atoi_base_error:
 		xor rax, rax
 	ft_atoi_base_end:
-		add rsp, 8
+		add rsp, 16
 		mov rsp, rbp
 		pop rdi
 		pop rsi
@@ -283,4 +294,5 @@ section .rodata
 	invalid_base db "+-", 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, " ", 0 ; "+-\a\b\t\n\v\f\r "
 	whitespace db 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, " ", 0 ; "\a\b\t\n\v\f\r "
 
-	NUMBER_ASCII_CHAR equ 256
+	INT_MIN equ -2147483648
+	INT_MAX equ 2147483647
