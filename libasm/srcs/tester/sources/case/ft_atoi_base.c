@@ -14,7 +14,7 @@ static void	individual_atoi_base(char *str, char *base, int expected, char *test
 libasm_str = \"%d\"\n\
 libc_str = \"%d\"\n", libasm_ret, expected);
 	else
-		printf("[+] TEST PASSED\n");
+		printf("\e[0;32m[+] TEST PASSED\n\e[0m");
 }
 
 void test_atoi_base(void)
@@ -27,4 +27,9 @@ void test_atoi_base(void)
 	individual_atoi_base("777", "0123456789", 777, "Testing with a base10 little number");
 	individual_atoi_base("2147483647", "0123456789", 2147483647, "Testing with a base10 INT_MAX");
 	individual_atoi_base("-2147483648", "0123456789", -2147483648, "Testing with a base10 INT_MIN");
+	individual_atoi_base("2147483650", "0123456789", 0, "Testing with a little overflow value");
+	individual_atoi_base("9999999999999", "0123456789", 0, "Testing with a big overflow value");
+	individual_atoi_base("-2147483650", "0123456789", 0, "Testing with a little underflow value");
+	individual_atoi_base("-9999999999999", "0123456789", 0, "Testing with a big underflow value");
+
 }

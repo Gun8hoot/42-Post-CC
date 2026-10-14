@@ -1,21 +1,31 @@
 BITS 64
 
 section .text
-	global ft_strlen
-	ft_strlen:
-		push rsi
-		; INITIALIZE
-		xor rsi, rsi ; Setting rsi to 0
+global ft_strlen
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; This function calculate the length of a string by passing through every
+; character and check if the current character is a \0
+; Register:
+;    rsi = The counter of character
+; Return:
+;   - The size of the string
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; size_t	ft_strlen(char *str)
+ft_strlen:
+	; --- INITIALIZE ---
+	push rsi
+	xor rsi, rsi				; i = 0
 
-		cmp rdi, 0
-		jz endloop
+	cmp rdi, 0
+	jz endloop					; if (!str)
 
-		loop:
-			cmp [rdi + rsi], 0x00 ; Check if the current character is a \0
-			jz endloop ; If its not
-			inc rsi ; Increase rsi
-			jmp loop ; Redo the loop
-		endloop:
-			mov rax, rsi ; Put the value of rsi (our counter) in rax
-			pop rsi
-			ret ; Return the value
+	; --- Loop through elements ---
+	loop:
+		cmp [rdi + rsi], 0x00
+		jz endloop				; str[i] == '\0'
+		inc rsi					; i++
+		jmp loop
+	endloop:
+		mov rax, rsi			; return (i)
+		pop rsi
+		ret
