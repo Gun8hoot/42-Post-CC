@@ -42,10 +42,8 @@ section .text
 			inc r8 ; Increase the counter by one
 			jmp loop ; Redo the loop
 
-		done:
-			add rsp, 8
-			ret
 		overflow:
 			xor rax, rax
+		done:
 			add rsp, 8
 			ret

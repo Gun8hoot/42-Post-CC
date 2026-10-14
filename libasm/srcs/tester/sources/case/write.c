@@ -80,8 +80,9 @@ libc = %d\e[0m\n", str, libasm_ret, libc_ret);
 void	test_write(void)
 {
 	char	*str = "write this string on an alternative tty and do your things on it!\n";
+	char	*big_str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n";
 	struct test_pty pty;
-	ssize_t bytes;
+
 	memset(&pty, 0, sizeof(pty));
 
 	printf("\n\e[0;34m=== TEST FT_WRITE ===\e[0m\n");
@@ -93,7 +94,10 @@ void	test_write(void)
 	}
 
 	individual_write(pty.slave_fd, str, strlen(str), "Testing write a simple string");
+	individual_write(pty.slave_fd, big_str, strlen(big_str), "Testing write a big string");
 	individual_write(-1, str, strlen(str), "Testing write on an invalid fd");
+	individual_write(pty.slave_fd, "", strlen(""), "Testing write an empty string");
+	individual_write(pty.slave_fd, str, 0, "Testing write 0 bytes");
 
 	test_pty_destroy(&pty);
 }

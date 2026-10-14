@@ -6,11 +6,11 @@ section .text
 	extern __errno_location
 
 	ft_read:
-		mov rax, 0
+		mov rax, 0x00
 		syscall
 
 		test rax, rax
-		jns .done
+		jns ft_read_end
 
 		neg rax ; Invert sign bit to get a positif number
 		mov rdi, rax ; Save the result in rdi
@@ -18,5 +18,5 @@ section .text
 		call __errno_location wrt ..plt ; Get the errno pointer
 		mov [rax], rdi ; Put the actual errno code on errno
 		mov rax, -1 ; Modify the return code to -1
-		.done:
+		ft_read_end:
 			ret

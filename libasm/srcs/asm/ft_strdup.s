@@ -11,6 +11,10 @@ section .text
 		push rdi
 		mov rbp, rsp
 
+		; Check if the user have put NULL
+		cmp rdi, 0x00
+		jz null
+
 		; Get the size of our strijng
 		mov rax, rdi
 		call ft_strlen
@@ -25,6 +29,7 @@ section .text
 		jz done
 
 		mov rdi, [rsp]
+
 		xor rsi, rsi
 		loop:
 			mov cl, byte [rdi + rsi]
@@ -33,6 +38,8 @@ section .text
 			jz done
 			inc rsi
 			jmp loop
+		null:
+			mov rax, rdi
 		done:
 			pop rdi
 			pop rbp

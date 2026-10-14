@@ -8,6 +8,9 @@ global ft_is_whitespace
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; int ft_atoi_base(char *str, char *base)
 ; Convert a based string to his base10 number
+; Todo:
+;   - Fix overflow by storing the result on a 64bit (long long) instead of a 32bit (int)
+;     and then return the result in
 ft_atoi_base:
 	; --- Stack initialization ---
 	push r8										; Only for stack alignment
@@ -54,6 +57,7 @@ ft_atoi_base:
 			jmp skip_whitespace_loop
 		skip_whitespace_loop_end:
 			nop
+
 	; --- Process every mathematical operation sign ---
 	process_sign:
 		process_sign_loop:
@@ -75,6 +79,7 @@ ft_atoi_base:
 				jmp process_sign_loop
 		process_sign_loop_end:
 			nop
+
 	; --- Convert based number in a base10 int ---
 	process_number:
 		xor r10, r10							; A counter to count how many number ive converted,
@@ -83,7 +88,7 @@ ft_atoi_base:
 			mov al, byte [rdi + r8]
 			cmp al, 0x00
 			jz process_number_loop_end
-			; Get the value of a based number, for F in hex this will be 15
+			; Get the value of a based number, like for F in hex this will be 15
 			get_value_based:
 				xor r13, r13
 				get_value_based_loop:
@@ -99,8 +104,9 @@ ft_atoi_base:
 
 			mov eax, dword [rsp]				; Get result from the stack
 			imul eax, r9d						; result *= base_length
+			jo ft_atoi_base_error				; if (result > INT_MAX
 			add eax, r13d						; result += base[j]
-			;imul eax, 10						; result *= 10
+			jo ft_atoi_base_error
 			mov dword [rsp], eax
 
 			inc r8
@@ -109,7 +115,7 @@ ft_atoi_base:
 		process_number_loop_end:
 			nop
 	mov eax, dword [rsp]
-	imul eax, dword [rsp + 4]
+	imul eax, dword [rsp + 4]					; result *= sign
 	jmp ft_atoi_base_end
 
 	ft_atoi_base_error:
@@ -121,7 +127,7 @@ ft_atoi_base:
 		pop rsi
 		pop rbp
 		pop r8
-		ret
+		ret										; return (result)
 
 ; https://www.youtube.com/watch?v=woCCcOlopNo
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

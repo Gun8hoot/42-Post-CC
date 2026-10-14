@@ -7,6 +7,9 @@ section .text
 		; INITIALIZE
 		xor rsi, rsi ; Setting rsi to 0
 
+		cmp rdi, 0
+		jz endloop
+
 		loop:
 			cmp [rdi + rsi], 0x00 ; Check if the current character is a \0
 			jz endloop ; If its not
