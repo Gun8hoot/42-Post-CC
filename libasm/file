@@ -1,6 +1,0 @@
-/usr/bin/ld: .objects/srcs/tester/main.o: in function `main':
-/home/user/dir/srcs/tester/main.c:9:(.text+0x1f): undefined reference to `test_strlen'
-/usr/bin/ld: /home/user/dir/srcs/tester/main.c:11:(.text+0x33): undefined reference to `test_write'
-/usr/bin/ld: /home/user/dir/srcs/tester/main.c:13:(.text+0x47): undefined reference to `test_read'
-collect2: error: ld returned 1 exit status
-make: *** [Makefile:52: tester] Error 1
