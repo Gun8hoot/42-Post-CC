@@ -2,10 +2,23 @@
 #include "includes/main.h"
 #include "includes/test_prototype.h"
 #include <stdlib.h>
+#include <string.h>
 
-int		cmp(int *data1, int *data2)
+int		cmp(void *data1, void *data2)
 {
-	return (*data1 - *data2);
+	if (!data1 || !data2) return 0;
+	return (*(int *)data1 - *(int *)data2);
+}
+
+void	dbg_ft_list_show(t_list *lst)
+{
+	size_t	elem = 0;
+	while (lst != NULL)
+	{
+		printf("%ld : %s\n", elem, (char*)lst->data);
+		elem++;
+		lst = lst->next;
+	}
 }
 
 void	test(void)
@@ -14,9 +27,8 @@ void	test(void)
 	t_list *lst2;
 	t_list *lst3;
 	t_list *lst4;
-	int		data = 42;
 	int		data1 = 3;
-	int		data2 = 1;
+	int		data2 = 42;
 	int		data3 = 2;
 
 	lst1 = malloc(sizeof(t_list));
@@ -24,13 +36,14 @@ void	test(void)
 	lst3 = malloc(sizeof(t_list));
 
 	lst1->next = lst2;
-	lst1->data = &data1;
+	lst1->data = strdup("string3");
 	lst2->next = lst3;
-	lst2->data = &data2;
+	lst2->data = strdup("string2");
 	lst3->next = NULL;
-	lst3->data = &data3;
+	lst3->data = strdup("string1");
 
-	ft_list_sort(&lst1, &cmp);
+	ft_list_sort(&lst1, (int (*)(void *, void *))&ft_strcmp);
+	dbg_ft_list_show(lst1);
 }
 
 int main(int argc, char **argv)
