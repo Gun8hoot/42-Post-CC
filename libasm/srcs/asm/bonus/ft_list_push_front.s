@@ -13,7 +13,14 @@ extern ft_calloc
 ; STRUCT ;
 ;;;;;;;;;;
 
-; Struct for the base of the linked list. Whole size is 16 bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;typedef struct s_list
+;{
+;    void *data;
+;    struct s_list *next;
+;} t_list;
+; @brief: This struct is the base of every node on or linked list
+; @size: 16 bytes
 struc s_list
 	.data resq 1 ; Quadword allocated for the pointer where the data is stored
 	.next resq 1 ; Pointer where the next element is stored
@@ -34,7 +41,8 @@ ft_list_push_front:
 	push rsi
 	push rdi
 
-	cmp rdi, 0x00
+	; --- First check of begin_list ---
+	test rdi, rdi
 	jz ft_list_push_front_end			; if (begin_list == NULL) ; return (NULL)
 
 
@@ -43,24 +51,23 @@ ft_list_push_front:
 	mov rsi, 16							; The size of our structure (2 ptr = 16 bytes)
 	call ft_calloc						; new_node = ft_calloc(1, sizeof(t_list))
 
-	cmp rax, 0
+	test rax, rax
 	jz ft_list_push_front_end			; if (new_node == NULL) ; return (NULL)
 
+	; --- Change new node .next element ---
+	mov rcx, [rsp + 0]
+	mov rcx, [rcx]						; Dereferencing the begin_list first pointer
+	mov qword [rax + s_list.next], rcx	; new_node->next = *begin_list
 
 	; --- Change new node .data element ---
-	mov rcx, [rsp + 8]
-	mov qword [rax + s_list.data], rcx
-
-	; --- Change new node .next element ---
-	mov rcx, [rsp]
-	mov qword [rax + s_list.next], rcx
+	mov rcx, qword [rsp + 8]
+	mov qword [rax + s_list.data], rcx	; new_node->data = data
 
 	; --- Change the head by our new node ---
-	mov rdi, rax						; begin_list = new_node
+	mov rcx, qword [rsp + 0]
+	mov [rcx], rax						; *begin_list = new_node
 
 	ft_list_push_front_end:
-		mov rsp, rbp
-
 		pop rdi
 		pop rsi
 		pop rcx
