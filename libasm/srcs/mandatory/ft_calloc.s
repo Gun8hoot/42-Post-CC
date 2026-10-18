@@ -11,8 +11,8 @@ section .text
 	; void		*ft_calloc(size_t n, size_t size);
 	ft_calloc:
 		; --- Save on the stack every arguments ---
-		push rsi 							; size save_size = size
-		push rdi 							; size save_n = n
+		push rsi 							; size_t save_size = size
+		push rdi 							; size_t save_n = n
 
 		; --- Compute the size to allocated in memory ---
 		mov rax, rsi

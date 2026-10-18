@@ -1,10 +1,3 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;typedef struct s_list
-;{
-;    void *data;
-;    struct s_list *next;
-;} t_list;
-
 BITS 64
 
 extern ft_calloc
@@ -19,16 +12,13 @@ extern ft_calloc
 ;    void *data;
 ;    struct s_list *next;
 ;} t_list;
+;;;;;;;;;;;;;;;;;;;;;;;;;
 ; @brief: This struct is the base of every node on or linked list
 ; @size: 16 bytes
 struc s_list
 	.data resq 1 ; Quadword allocated for the pointer where the data is stored
 	.next resq 1 ; Pointer where the next element is stored
 endstruc
-
-;;;;;;;;;
-; .TEXT ;
-;;;;;;;;;
 
 section .text
 global ft_list_push_front

@@ -13,7 +13,7 @@ typedef struct s_list {
 
 extern void ft_list_push_front(t_list **begin_list, void *data);
 extern void ft_list_remove_if(t_list **begin_list, void *data_ref,
-                              int (*cmp)(), void (*free_fct)(void *));
+                              int (*cmp)(void *, void*), void (*free_fct)(void *));
 
 static int  cmp_str(void *a, void *b) { return strcmp((char *)a, (char *)b); }
 static void no_free(void *p)          { (void)p; }
