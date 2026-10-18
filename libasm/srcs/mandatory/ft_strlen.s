@@ -5,10 +5,6 @@ global ft_strlen
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This function calculate the length of a string by passing through every
 ; character and check if the current character is a \0
-; Register:
-;    rsi = The counter of character
-; Return:
-;   - The size of the string
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; size_t	ft_strlen(char *str)
 ft_strlen:

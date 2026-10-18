@@ -12,7 +12,7 @@ typedef struct s_list {
 } t_list;
 
 extern void ft_list_push_front(t_list **begin_list, void *data);
-extern void ft_list_sort(t_list **begin_list, int (*cmp)());
+extern void ft_list_sort(t_list **begin_list, int (*cmp)(void *, void*));
 
 static int cmp_str(void *a, void *b) { return strcmp((char *)a, (char *)b); }
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	for (int i = n - 1; i >= 0; i--)
 		ft_list_push_front(&list, tokens[i]);
 
-	ft_list_sort(&list, cmp_str);
+	ft_list_sort(&list, (int (*)(void *, void *))&strcmp);
 
 	/* expected = tokens sorted */
 	char *sorted[1024];

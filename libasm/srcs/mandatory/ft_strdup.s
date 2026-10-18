@@ -6,6 +6,10 @@ extern ft_strlen
 section .text
 	global ft_strdup
 
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function create a copy of a string by allocated dynamiclly with malloc
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; char *strdup(const char *s);
 	ft_strdup:
 		push rbp
 		push rdi

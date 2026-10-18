@@ -5,11 +5,6 @@ section .text
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; This function will copy the data store on src on the dest
-	; Register:
-	;   - rdi: Our destination string
-	;   - rsi: Our source string
-	; Return:
-	;   - The address of the first character of the destination
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; char *ft_strcpy(char *dest, char *src)
 	ft_strcpy:

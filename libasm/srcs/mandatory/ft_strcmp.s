@@ -4,40 +4,32 @@ section .text
 global ft_strcmp
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; This function compare two strings to check if the content is the same
-; Register:
-;   - eax : The current character of s1
-;   - ecx : The current character of s2
+; This function compare two strings to check if the content is the same by
+; comparing every character and returning the difference
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; int ft_strcpy(char *s1, char *s2)
 ft_strcmp:
-	push r8
 	push rsi
 	push rdi
 
 	loop:
-		movzx eax, byte [rdi]
-		movzx ecx, byte [rsi]
+		movzx eax, byte [rdi]		; c1 = *s1
+		movzx ecx, byte [rsi]		; c2 = *s2
 
 		cmp eax, 0x00
-		jz .different
+		jz .different				; if (c1 == '\0')
 		cmp ecx, 0x00
-		jz .different
+		jz .different				; if (c2 == '\0')
 
 		; Compare them
 		cmp eax, ecx
 		jne .different				; if (*s1 != *s2)
-		inc rdi
-		inc rsi
+		inc rdi						; s1++
+		inc rsi						; s2++
 		jmp loop
 		.different:
-			sub eax, ecx ; Getting the difference between those two character
-			jmp end
-		.egal:
-			xor rax, rax
-			jmp end
+			sub eax, ecx			; ret = c1 - c2
 	end:
 		pop rdi
 		pop rsi
-		pop r8
-		ret
+		ret							; return (ret)
