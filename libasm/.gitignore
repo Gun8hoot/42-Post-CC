@@ -4,3 +4,4 @@
 *.out
 libasm.a
 .clangd
+test.c

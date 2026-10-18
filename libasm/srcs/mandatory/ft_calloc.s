@@ -5,45 +5,46 @@ extern malloc
 section .text
 	global ft_calloc
 
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; This function allocated a place on the heap of the size of n * size
 	; void		*ft_calloc(size_t n, size_t size);
 	ft_calloc:
-		; Push for stack align
-		push rsi ; Pushing size of each elem
+		; --- Save on the stack every arguments ---
+		push rsi 							; size save_size = size
+		push rdi 							; size save_n = n
 
-		; Calculate the size to alloc
-		mov rax, rdi
-		mul rsi
+		; --- Compute the size to allocated in memory ---
+		imul rdi, rsi						; total_size = n * size
 
-		; Checking for size_t overflow
-		test rdx, rdx
+		; --- Check if our value overflow size_t ---
+		test edi, edi
 		jo overflow
 
-		mov rdi, rax ;
-		push rdi ; Save the real size to allocated on the stack
+		push rdi							; Save total_size for later
 
-		; Allocated memory
-		call malloc wrt ..plt
-		pop rcx ; Recover the size to allocated
+		; --- Allocated the memory using malloc ---
+		call malloc wrt ..plt				; malloc(total_size)
 
-		; Check for malloc error
+		pop rcx								; Recover total_size
+
 		test rax, rax
-		jz done
+		jz done								; if (!arr)
 
 		; Check if the size of each elem is 0
-		cmp [rsp], 0x00
-		je done
+		cmp [rsp + 8], 0x00
+		je done								; if (save_size == 0)
 
-		xor r8, r8 ; Reset r8 to get 0
-		sub rcx, 1   ; Align rcx to zero
+		xor r8d, r8d						; i = 0
 		loop:
-			mov byte [rax + r8], 0x00 ; Setting the current element to 0
-			cmp r8, rcx ; Check we have write every bytes we should
-			je done ; Exit the loop
-			inc r8 ; Increase the counter by one
-			jmp loop ; Redo the loop
+			cmp r8d, ecx
+			je done							; if (i == total_size)
+			mov byte [rax + r8], 0x00		; arr[i] = '\0'
+			inc r8d							; i++
+			jmp loop
 
 		overflow:
-			xor rax, rax
+			xor rax, rax					; return (NULL) // OVERFLOW CASE
 		done:
-			add rsp, 8
+			pop rdi
+			pop rsi
 			ret
