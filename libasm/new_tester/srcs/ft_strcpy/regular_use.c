@@ -1,42 +1,37 @@
-
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define FR_GREEN "\e[32m"
-#define FR_RED "\e[31m"
-#define RESET "\e[0m"
+#define FR_RED   "\e[31m"
+#define RESET    "\e[0m"
 
-extern char *ft_strcpy(char *restrict dst, const char *restrict src);
+extern char *ft_strcpy(char *dst, const char *src);
 
 int main(int argc, char **argv)
 {
-	char	*libasm_buff;
-	char	*libc_buff;
+	if (argc != 3) return (2);
 
-	if (argc != 3)
-		return  (2);
+	size_t n = strlen(argv[1]);
+	char *buf_asm  = malloc(n + 1);
+	char *buf_libc = malloc(n + 1);
+	if (!buf_asm || !buf_libc) return (2);
 
-	libasm_buff = malloc(sizeof(char) * strlen(argv[1]) + 1);
-	if (!libasm_buff)
-		return (3);
+	char *ret_asm  = ft_strcpy(buf_asm,  argv[1]);
+	char *ret_libc = strcpy(buf_libc, argv[1]);
 
-	libc_buff = malloc(sizeof(char) * strlen(argv[1]) + 1);
-	if (!libc_buff)
+	int ok = 1;
+	if (strcmp(buf_asm, buf_libc) != 0) ok = 0;
+	if (ret_asm != buf_asm)             ok = 0;
+
+	if (!ok)
 	{
-		free(libasm_buff);
-		return (3);
-	}
-
-	libasm_buff = ft_strcpy(libasm_buff, argv[1]);
-	libc_buff = strcpy(libasm_buff, argv[1]);
-
-	if (strcmp(libc_buff, libc_buff) != 0)
-	{
-		printf("%s[-] ft_strlen : %s result differ!\nExpected: %s\nGot: %s\n%s", FR_RED, argv[2], libc_buff, libasm_buff, RESET);
+		printf("%s[-] ft_strcpy : %s result differ!\nExpected: \"%s\"\nGot:      \"%s\"\n%s",
+			FR_RED, argv[2], buf_libc, buf_asm, RESET);
+		free(buf_asm); free(buf_libc);
 		return (1);
 	}
-	else
-		printf("%s[+] ft_strlen : %s passed!%s\n", FR_GREEN, argv[2], RESET);
+	free(buf_asm); free(buf_libc);
+	printf("%s[+] ft_strcpy : %s passed!%s\n", FR_GREEN, argv[2], RESET);
 	return (0);
 }

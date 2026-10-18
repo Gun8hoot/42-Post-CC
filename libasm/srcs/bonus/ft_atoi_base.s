@@ -46,7 +46,7 @@ ft_atoi_base:
 	; --- Skipping every whitespace we found ---
 	skip_whitespace:
 		skip_whitespace_loop:
-			mov al, byte [rdi + r8]
+			mov al, byte [rdi + r8]				; Store the character
 			cmp al, 0x00
 			jz skip_whitespace_loop_end			; if (!str[i])
 			mov rcx, rdi						; Saving the our entier string "str" in rcx
@@ -55,6 +55,7 @@ ft_atoi_base:
 			mov rdi, rcx						; Recover our string "str" in rdi
 			cmp rax, 0x1
 			jnz skip_whitespace_loop_end		; if (!ft_is_whitespace(str[i]))
+			inc r8
 			jmp skip_whitespace_loop
 		skip_whitespace_loop_end:
 			nop
@@ -76,6 +77,7 @@ ft_atoi_base:
 				jmp process_sign_loop
 			found_minus:
 				neg dword [rsp + 8]				; sign *= -1
+				mov r13d, dword [rsp + 8]
 				inc r8
 				jmp process_sign_loop
 		process_sign_loop_end:
@@ -124,10 +126,7 @@ ft_atoi_base:
 			nop
 
 	mov eax, dword [rsp]
-	imul eax, dword [rsp + 8]						; result *= sign
 	jmp ft_atoi_base_end
-
-
 
 	ft_atoi_base_error:
 		xor rax, rax
