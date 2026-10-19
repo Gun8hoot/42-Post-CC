@@ -17,68 +17,76 @@ global ft_list_remove_if
 ; void ft_list_remove_if(t_list **begin_list, void *data_ref, int (*cmp)(), void (*free_fct)(void *));
 ft_list_remove_if:
 	; --- Save on the stack every arguments ---
-	push r10
-	push rdx
-	push rsi
-	push rdi
+	push rcx								; save void (*free_fct)(void *)
+	push rdx								; save int (*cmp)()
+	push rsi								; save void *data_ref
+	push rdi								; save t_list **begin_list
+	;; 32 bytes stack
 
-	; --- Check linked_list ptr and the data reference ptr ---
+	; --- Check pointer ---
 	test rdi, rdi
-	jz remove_if_end				; if (begin_list == NULL)
+	jz remove_if_end						; if (begin_list == NULL)
 	test rdx, rdx
-	jz remove_if_end				; if (cmp == NULL)
-	test r10, r10
-	jz remove_if_end				; if (free_fct == NULL)
+	jz remove_if_end						; if (cmp == NULL)
+	test rcx, rcx
+	jz remove_if_end						; if (free_fct == NULL)
 
-	mov rcx, rdi					; struct s_list **ptr_save = begin_list
+	mov rcx, rdi							; struct s_list **ptr_save = begin_list
 
 	loop:
-		cmp [rcx], 0x00
-		jz remove_if_end			; if (ptr_save == NULL)
+		cmp qword [rcx], 0x00
+		jz remove_if_end					; if (*ptr_save == NULL)
 
-		mov r10, [rcx]				; struct s_list *node = *ptr_save
+		mov r10, [rcx]						; struct s_list *node = *ptr_save
+
+		; --- Prepare function parameter ---
+		mov rax, [rsp + 16]					; cmp
+		mov rdi, [rsp + 8]					; data_ref
+		mov rsi, [r10 + s_list.data]		; node->data
 
 		; --- Prepare stack ---
 		push rcx
 		push r10
 		sub rsp, 8
+		;; 56 bytes stack (+ 8 bytes of return address on the function)
 
 		; --- Call cmp ---
-		mov rax, [rsp + 16]
-		mov rdi, [rsp + 8]
-		mov rsi, [rcx + s_list.data]
-		call rax					; cmp(data_ref, ptr_save->data)
+		call rax							; cmp(data_ref, node->data)
 
 		; --- Restore stack
 		add rsp, 8
 		pop r10
 		pop rcx
+		;; 32 bytes stack
 
-		cmp rax, 0
-		jz remove_node				; if (cmp_ret == 0)
+		cmp eax, 0
+		jz remove_node						; if (cmp_ret == 0)
 
 		; else
-		lea rcx, [rdx + s_list.next]; ptr_save = &(*ptr_save)->next
-		mov rdx, rcx
+		mov rdx, [rcx]
+		lea rcx, [rdx + s_list.next]		; ptr_save = &(*ptr_save)->next
 		jmp loop
 		remove_node:
-			lea rcx, [rdx + s_list.next]; ptr_save = &(*ptr_save)->next
-			mov [rdx], rcx
+			mov r11, [r10 + s_list.next]
+			mov [rcx], r11					; *ptr_save = node->next
 
-			push rdx
+			mov rax, [rsp + 24]				; free_fct
+			mov rdi, [r10 + s_list.data]	; node->data
+
+			push rcx
 			push r10
-			add rsp, 8
+			sub rsp, 8
+			;; 56 bytes stack
 
-			mov rax, [rsp + 40]
-			mov rdi, [r10 + s_list.data]
 			call rax					; free_fct(node->data)
 
-			mov rdi, [rsp + 8]
+			mov rdi, [rsp + 8]			; node
 			call free wrt ..plt			; free(node)
 
-			sub rsp, 8
+			add rsp, 8
 			pop r10
-			pop rdx
+			pop rcx
+			;; 32 bytes stack
 
 			jmp loop
 
@@ -87,4 +95,5 @@ ft_list_remove_if:
 		pop rsi
 		pop rdx
 		pop r10
+		;; 0 bytes stack
 		ret
