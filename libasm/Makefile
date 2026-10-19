@@ -7,11 +7,11 @@ OBJECT_DIR			=	.objects
 
 MENDATORY_SOURCES	= $(shell find srcs/mandatory -name '*.s')
 ALL_SOURCES			= $(shell find srcs -name '*.s')
+SRCS				= $(if $(filter bonus,$(MAKECMDGOALS)),$(ALL_SOURCES),$(MENDATORY_SOURCES))
 
-MENDATORY_OBJECTS	= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(MENDATORY_SOURCES))
+OBJS				= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(SRCS))
 ALL_OBJECTS			= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(ALL_SOURCES))
 
-# ASSEMBLING .s FILES
 $(OBJECT_DIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	@printf "\x1b[0;32m[+] Assembling %s\x1b[0m\n" $@
@@ -19,13 +19,12 @@ $(OBJECT_DIR)/%.o: %.s
 
 all: $(NAME)
 
-$(NAME): $(MENDATORY_OBJECTS)
-	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $@
-	@ar rcs $@ $(MENDATORY_OBJECTS)
 
-bonus: $(ALL_OBJECTS)
-	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $(NAME)		# RELINKING RULE
-	@ar rcs $(NAME) $(ALL_OBJECTS)
+bonus: $(NAME)
+
+$(NAME): $(OBJS)
+	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $@
+	@ar rcs $@ $^
 
 clean:
 	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(ALL_OBJECTS)

@@ -10,12 +10,9 @@ ft_simd_memchr:
 	push rdi
 	;; Stack size 24
 
-	cmp qword rdi, 0x00
-	jz ft_simd_memchr_end_err				; if (s == NULL)
-	cmp qword rcx, 0
-	je ft_simd_memchr_end_err				; if (n == 0)
 
-	ft_simd_memchr_end_err:
+
+	memchr_not_found:
 		xor rax, rax
 	ft_simd_memchr_end:
 		pop rdi
