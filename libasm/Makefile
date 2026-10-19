@@ -1,32 +1,35 @@
-NAME		=	libasm.a
-TESTER_NAME	=	tester
+NAME				=	libasm.a
 
-CC			=	gcc
-CFLAGS		=	-g3 -c -Isrcs/tester
+ASM					=	nasm
+ASMFLAGS			=	-f elf64
 
-AS			=	nasm
-ASFLAG		=	-f elf64
+OBJECT_DIR			=	.objects
 
-OBJECT_DIR	=	.objects
+MENDATORY_SOURCES	= $(shell find srcs/mandatory -name '*.s')
+ALL_SOURCES			= $(shell find srcs -name '*.s')
 
-SOURCES		= $(shell find srcs -name '*.s')
-OBJECTS		= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(SOURCES))
+MENDATORY_OBJECTS	= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(MENDATORY_SOURCES))
+ALL_OBJECTS			= $(patsubst %.s,$(OBJECT_DIR)/%.o,$(ALL_SOURCES))
 
 # ASSEMBLING .s FILES
 $(OBJECT_DIR)/%.o: %.s
 	@mkdir -p $(dir $@)
 	@printf "\x1b[0;32m[+] Assembling %s\x1b[0m\n" $@
-	@$(AS) $(ASFLAG) -o $@ $<
+	@$(ASM) $(ASMFLAGS) -o $@ $<
 
 all: $(NAME)
 
-$(NAME): $(OBJECTS)
+$(NAME): $(MENDATORY_OBJECTS)
 	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $@
-	@ar rcs $@ $(OBJECTS)
+	@ar rcs $@ $(MENDATORY_OBJECTS)
+
+bonus: $(ALL_OBJECTS)
+	@printf "\x1b[0;32m[+] Linking %s\n\x1b[0m" $(NAME)		# RELINKING RULE
+	@ar rcs $(NAME) $(ALL_OBJECTS)
 
 clean:
-	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(OBJECTS)
-	@rm -f $(OBJECTS)
+	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(ALL_OBJECTS)
+	@rm -f $(ALL_OBJECTS)
 
 fclean: clean
 	@printf "\x1b[0;31m[+] Removing %s\x1b[0m\n" $(NAME)
@@ -34,4 +37,4 @@ fclean: clean
 
 re: fclean $(NAME)
 
-.PHONY: $(NAME) all re clean fclean bonus
+.PHONY: all re clean fclean

@@ -2,6 +2,6 @@
 .objects
 *.o
 *.out
-libasm.a
+*.a
 .clangd
 test.c
