@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -I/home/gun8hoot/42/42-Post-CC/famine
+    - -Wextra
+    - -Wall
